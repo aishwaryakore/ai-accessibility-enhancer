@@ -6,8 +6,8 @@ if (!window.simplifyScriptLoaded) {
         simplifySelectedText().then((simplified) => {
           sendResponse({ simplifiedText: simplified });
         }).catch((err) => {
-          console.error("❌ Simplify Error:", err);
-          sendResponse({ simplifiedText: "❌ Failed to simplify text." });
+          console.error("Simplify Error:", err);
+          sendResponse({ simplifiedText: "Failed to simplify text." });
         });
         return true; // Indicates async response
       }
@@ -21,7 +21,7 @@ if (!window.simplifyScriptLoaded) {
     const selectedText = window.getSelection().toString().trim();
   
     if (!selectedText) {
-      alert("⚠️ Please select some text on the page first.");
+      alert("Please select some text on the page first.");
       throw new Error("No text selected");
     }
   
@@ -50,7 +50,7 @@ if (!window.simplifyScriptLoaded) {
     const data = await res.json();
   
     const simplifiedText = data.candidates?.[0]?.content?.parts?.[0]?.text || 
-      "⚠️ Could not simplify text.";
+      "Could not simplify text.";
   
     console.log("Simplified text:", simplifiedText);
   

@@ -1,6 +1,4 @@
 document.getElementById("altTextButton").addEventListener("click", () => {
-  console.log("clicked")
-
   chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     // First, inject the content script if it's not already present
     chrome.scripting.executeScript({
@@ -50,6 +48,20 @@ document.getElementById("simplifyTextButton").addEventListener("click", () => {
       );
     }).catch((error) => {
       console.error("Failed to inject simplifyText.js:", error);
+    });
+  });
+});
+
+document.getElementById("textToSpeechButton").addEventListener("click", () => {
+  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+    // Inject TTS content script
+    chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ["content/textToSpeech.js"]
+    }).then(() => {
+      chrome.tabs.sendMessage(tab.id, { type: "TEXT_TO_SPEECH" });
+    }).catch((error) => {
+      console.error("Failed to inject TTS content script:", error);
     });
   });
 });
