@@ -1,4 +1,9 @@
+// Alt Text Generation
 document.getElementById("altTextButton").addEventListener("click", () => {
+
+  const resultDiv = document.getElementById("result");
+  resultDiv.innerText = "Generating alt text... Please wait.";
+
   chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     // First, inject the content script if it's not already present
     chrome.scripting.executeScript({
@@ -23,8 +28,19 @@ document.getElementById("altTextButton").addEventListener("click", () => {
   });
 });
 
+chrome.runtime.onMessage.addListener((req, _sender, _sendResponse) => {
+  if (req.type === "ALT_TEXT_FINISHED") {
+    document.getElementById("result").innerText = "Alt text generation finished!";
+  }
+});
 
+
+// Simplify Text
 document.getElementById("simplifyTextButton").addEventListener("click", () => {
+
+  const resultDiv = document.getElementById("result");
+  resultDiv.innerText = "Simplifying text... Please wait.";
+
   chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     // Inject simplifyText.js if not already present
     chrome.scripting.executeScript({
@@ -52,6 +68,8 @@ document.getElementById("simplifyTextButton").addEventListener("click", () => {
   });
 });
 
+
+// Text-to-Speech 
 document.getElementById("textToSpeechButton").addEventListener("click", () => {
   chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     // Inject TTS content script

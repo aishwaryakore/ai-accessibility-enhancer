@@ -16,7 +16,13 @@ function delay(ms) {
   return new Promise((res) => setTimeout(res, ms));
 }
 
-const GEMINI_API_KEY = "AIzaSyDy6Z69kBTF4ZcQvXf51ooAbo7No_S9mhc";
+async function getApiKey() {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({ type: "GET_GEMINI_API_KEY" }, (res) => {
+      resolve(res.key);
+    });
+  });
+}
 
 async function generateAltTextForImages() {
   const images = document.querySelectorAll("img:not([alt]), img[alt='']");
@@ -24,6 +30,7 @@ async function generateAltTextForImages() {
 
   if (!images.length) {
     alert("No images without alt text found.");
+    chrome.runtime.sendMessage({ type: "ALT_TEXT_FINISHED" });
     return;
   }
 
@@ -58,11 +65,16 @@ async function generateAltTextForImages() {
       console.error("Skipping image due to error:", error);
     }
   }
+
+  chrome.runtime.sendMessage({ type: "ALT_TEXT_FINISHED" });
 }
 
 async function getAltTextFromGemini(base64Image) {
+
+  const apiKey = await getApiKey();
+
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
