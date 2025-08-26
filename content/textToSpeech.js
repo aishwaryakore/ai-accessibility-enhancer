@@ -1,8 +1,11 @@
+let audioElement = null;
+
 // Prevent multiple listeners
 if (!window.ttsScriptLoaded) {
   window.ttsScriptLoaded = true;
 
   chrome.runtime.onMessage.addListener(async (req, _sender, _sendResponse) => {
+
     if (req.type === "TEXT_TO_SPEECH") {
       const selectedText = window.getSelection().toString().trim();
       if (!selectedText) {
@@ -35,8 +38,20 @@ if (!window.ttsScriptLoaded) {
         const data = await response.json();
 
         if (response.ok && data.audioContent) {
-          const audio = new Audio("data:audio/mp3;base64," + data.audioContent);
-          audio.play();
+          // Assign the audio to the global variable
+          if (audioElement) {
+            audioElement.pause();
+            audioElement = null;
+          }
+
+          audioElement = new Audio("data:audio/mp3;base64," + data.audioContent);
+          audioElement.play();
+
+          audioElement.onended = () => {
+            audioElement = null;
+            chrome.runtime.sendMessage({ type: "TTS_STATUS", status: "finished" });
+          };
+
         } else {
           console.error("❌ Google TTS API Error:", data);
           alert("Failed to generate speech. Check console for details.");
@@ -46,6 +61,26 @@ if (!window.ttsScriptLoaded) {
         alert("An error occurred while generating speech.");
       }
     }
+
+    if (req.type === "PAUSE_TTS" && audioElement) {
+      audioElement.pause();
+    }
+    if (req.type === "RESUME_TTS" && audioElement) {
+      audioElement.play();
+    }
+    if (req.type === "STOP_TTS" && audioElement) {
+      audioElement.pause();
+      audioElement.currentTime = 0;
+    }
+
+    if (req.type === "STOP_TTS" && audioElement) {
+      audioElement.pause();
+      audioElement.currentTime = 0;
+      audioElement = null;
+
+      chrome.runtime.sendMessage({ type: "TTS_STATUS", status: "finished" });
+    }
+
   });
 }
 

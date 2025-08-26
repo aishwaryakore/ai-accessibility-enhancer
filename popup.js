@@ -37,7 +37,6 @@ chrome.runtime.onMessage.addListener((req, _sender, _sendResponse) => {
 
 // Simplify Text
 document.getElementById("simplifyTextButton").addEventListener("click", () => {
-
   const resultDiv = document.getElementById("result");
   resultDiv.innerText = "Simplifying text... Please wait.";
 
@@ -70,7 +69,10 @@ document.getElementById("simplifyTextButton").addEventListener("click", () => {
 
 
 // Text-to-Speech 
+const ttsControls = document.getElementById("ttsControls");
+
 document.getElementById("textToSpeechButton").addEventListener("click", () => {
+  ttsControls.style.display = "flex";
   chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
     // Inject TTS content script
     chrome.scripting.executeScript({
@@ -82,4 +84,28 @@ document.getElementById("textToSpeechButton").addEventListener("click", () => {
       console.error("Failed to inject TTS content script:", error);
     });
   });
+});
+
+document.getElementById("pauseTTSButton").addEventListener("click", () => {
+  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+    chrome.tabs.sendMessage(tab.id, { type: "PAUSE_TTS" });
+  });
+});
+
+document.getElementById("resumeTTSButton").addEventListener("click", () => {
+  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+    chrome.tabs.sendMessage(tab.id, { type: "RESUME_TTS" });
+  });
+});
+
+document.getElementById("stopTTSButton").addEventListener("click", () => {
+  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+    chrome.tabs.sendMessage(tab.id, { type: "STOP_TTS" });
+  });
+});
+
+chrome.runtime.onMessage.addListener((req) => {
+  if (req.type === "TTS_STATUS" && req.status === "finished") {
+    ttsControls.style.display = "none"; // Hide controls when finished
+  }
 });
